@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "orchestrator",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "services": [
+    { "binding": "MEDIA", "service": "media-worker" },
+    { "binding": "FILES", "service": "file-worker" },
+    { "binding": "SEARCH", "service": "search-worker" },
+    { "binding": "TRANSLATE", "service": "translate-worker" },
+    { "binding": "QA", "service": "qa-worker" }
+  ],
+  "observability": { "enabled": true }
+}
