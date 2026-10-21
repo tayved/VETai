@@ -5,11 +5,10 @@
   "compatibility_date": "2026-10-13",
   "compatibility_flags": ["nodejs_compat"],
   "ai": { "binding": "AI" },
-  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "media-storage" }],
   "stream": { "binding": "STREAM" },
-   "secrets": {
+  "secrets": {
     "optional": ["GOOGLE_AI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
   },
-
   "observability": { "enabled": true }
 }
+
