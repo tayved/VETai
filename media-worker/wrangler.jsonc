@@ -1,1 +1,15 @@
-
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "media-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "ai": { "binding": "AI" },
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "media-storage" }],
+  "stream": { "binding": "STREAM" },
+  "secrets": {
+    "required": ["GOOGLE_AI_API_KEY"],
+    "optional": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
+  },
+  "observability": { "enabled": true }
+}
