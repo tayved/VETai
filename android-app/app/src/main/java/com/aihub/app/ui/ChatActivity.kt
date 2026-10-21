@@ -23,11 +23,13 @@ class ChatActivity : AppCompatActivity() {
         title = "Sohbet"
 
         binding.btnSend.setOnClickListener {
-            val userMessage = binding.etMessage.text.toString().trim()
+            val userMessage = binding.etMessage.text?.toString()?.trim() ?: ""
             if (userMessage.isEmpty()) return@setOnClickListener
+
             appendToChat("🧑 Siz: $userMessage\n\n")
+
             messages.put(JSONObject().put("role", "user").put("content", userMessage))
-            binding.etMessage.text.clear()
+            binding.etMessage.text?.clear()
             binding.btnSend.isEnabled = false
             binding.progressBar.visibility = View.VISIBLE
 
@@ -36,36 +38,52 @@ class ChatActivity : AppCompatActivity() {
                     val answer = ApiClient.chat(messages)
                     messages.put(JSONObject().put("role", "assistant").put("content", answer))
                     appendToChat("🤖 AI: $answer\n\n")
-                } catch (e: Exception) { appendToChat("❌ Hata: ${e.message}\n\n") }
-                finally { binding.btnSend.isEnabled = true; binding.progressBar.visibility = View.GONE }
+                } catch (e: Exception) {
+                    appendToChat("❌ Hata: ${e.message}\n\n")
+                } finally {
+                    binding.btnSend.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                }
             }
         }
 
         binding.btnAsk.setOnClickListener {
-            val question = binding.etMessage.text.toString().trim()
+            val question = binding.etMessage.text?.toString()?.trim() ?: ""
             if (question.isEmpty()) return@setOnClickListener
+
             appendToChat("🧑 Siz: $question\n\n")
-            binding.etMessage.text.clear()
+            binding.etMessage.text?.clear()
             binding.progressBar.visibility = View.VISIBLE
 
             lifecycleScope.launch {
-                try { val answer = ApiClient.ask(question); appendToChat("🤖 AI: $answer\n\n") }
-                catch (e: Exception) { appendToChat("❌ Hata: ${e.message}\n\n") }
-                finally { binding.progressBar.visibility = View.GONE }
+                try {
+                    val answer = ApiClient.ask(question)
+                    appendToChat("🤖 AI: $answer\n\n")
+                } catch (e: Exception) {
+                    appendToChat("❌ Hata: ${e.message}\n\n")
+                } finally {
+                    binding.progressBar.visibility = View.GONE
+                }
             }
         }
 
         binding.btnSummarize.setOnClickListener {
-            val text = binding.etMessage.text.toString().trim()
+            val text = binding.etMessage.text?.toString()?.trim() ?: ""
             if (text.isEmpty()) return@setOnClickListener
+
             appendToChat("🧑 Özetlenecek metin: ${text.take(50)}...\n\n")
-            binding.etMessage.text.clear()
+            binding.etMessage.text?.clear()
             binding.progressBar.visibility = View.VISIBLE
 
             lifecycleScope.launch {
-                try { val summary = ApiClient.summarize(text); appendToChat("📝 Özet: $summary\n\n") }
-                catch (e: Exception) { appendToChat("❌ Hata: ${e.message}\n\n") }
-                finally { binding.progressBar.visibility = View.GONE }
+                try {
+                    val summary = ApiClient.summarize(text)
+                    appendToChat("📝 Özet: $summary\n\n")
+                } catch (e: Exception) {
+                    appendToChat("❌ Hata: ${e.message}\n\n")
+                } finally {
+                    binding.progressBar.visibility = View.GONE
+                }
             }
         }
     }
@@ -73,6 +91,8 @@ class ChatActivity : AppCompatActivity() {
     private fun appendToChat(text: String) {
         chatHistory.append(text)
         binding.tvChat.text = chatHistory.toString()
-        binding.scrollView.post { binding.scrollView.fullScroll(View.FOCUS_DOWN) }
+        binding.scrollView.post {
+            binding.scrollView.fullScroll(View.FOCUS_DOWN)
+        }
     }
 }
