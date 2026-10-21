@@ -1,0 +1,9 @@
+# Web Arama Sağlayıcıları (search-worker)
+EXA_API_KEY=""
+CERAMIC_API_KEY=""
+LINKUP_API_KEY=""
+
+# AI Model Sağlayıcıları (media-worker, qa-worker)
+OPENAI_API_KEY=""
+ANTHROPIC_API_KEY=""
+GOOGLE_AI_API_KEY=""
