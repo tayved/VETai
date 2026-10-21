@@ -1,21 +1,12 @@
 /**
- * File Worker
- * Excel, Word, PDF, CSV gibi dosya oluşturma, düzenleme ve kaydetme.
- *
- * Bindings:
- *   AI     — Workers AI (toMarkdown ile belge dönüştürme)
- *   BUCKET — R2 bucket (dosya saklama)
- *
- * Excel ve Word için saf JavaScript ile minimal format üretimi yapılır.
- * Daha gelişmiş formatlar için npm paketleri (exceljs, docx) eklenebilir.
+ * File Worker (R2 yok)
+ * Excel, Word, CSV, HTML dosya oluşturma — içerik base64 olarak döner.
  */
 
 interface Env {
   AI: Ai;
-  BUCKET: R2Bucket;
 }
 
-// --- Minimal CSV üretimi ---
 function generateCSV(data: string[][]): string {
   return data
     .map((row) =>
@@ -29,7 +20,6 @@ function generateCSV(data: string[][]): string {
     .join("\n");
 }
 
-// --- Minimal Excel (SpreadsheetML / .xml) üretimi ---
 function generateExcelXML(sheets: { name: string; data: string[][] }[]): string {
   const worksheetXML = sheets
     .map(
@@ -57,7 +47,6 @@ function generateExcelXML(sheets: { name: string; data: string[][] }[]): string 
 </Workbook>`;
 }
 
-// --- Minimal Word (.docx) için HTML tabanlı belge ---
 function generateWordHTML(title: string, paragraphs: string[]): string {
   const body = paragraphs
     .map((p) => `<p style="margin-bottom:12pt;">${p.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</p>`)
@@ -78,13 +67,9 @@ function generateWordHTML(title: string, paragraphs: string[]): string {
 </html>`;
 }
 
-// --- Minimal HTML rapor ---
 function generateHTMLReport(title: string, sections: { heading: string; content: string }[]): string {
   const sectionsHTML = sections
-    .map(
-      (s) =>
-        `<section><h2>${s.heading}</h2><div>${s.content}</div></section>`,
-    )
+    .map((s) => `<section><h2>${s.heading}</h2><div>${s.content}</div></section>`)
     .join("\n");
 
   return `<!DOCTYPE html>
@@ -121,7 +106,7 @@ export default {
     }
 
     try {
-      // --- Excel Dosyası Oluştur ---
+      // --- Excel/CSV Dosyası Oluştur ---
       if (path === "/excel" && request.method === "POST") {
         const { filename, sheets, format } = await request.json() as {
           filename: string;
@@ -144,16 +129,14 @@ export default {
           ext = "xls";
         }
 
-        const key = `files/${filename}.${ext}`;
-        await env.BUCKET.put(key, content, {
-          httpMetadata: { contentType },
-        });
+        const base64 = btoa(unescape(encodeURIComponent(content)));
 
         return Response.json({
           success: true,
-          key,
-          format: fileFormat,
-          message: `Excel/${fileFormat.toUpperCase()} dosyası oluşturuldu`,
+          filename: `${filename}.${ext}`,
+          contentType,
+          content: base64,
+          message: `${fileFormat.toUpperCase()} dosyası oluşturuldu`,
         });
       }
 
@@ -166,14 +149,13 @@ export default {
         };
 
         const content = generateWordHTML(title, paragraphs);
-        const key = `files/${filename}.doc`;
-        await env.BUCKET.put(key, content, {
-          httpMetadata: { contentType: "application/msword" },
-        });
+        const base64 = btoa(unescape(encodeURIComponent(content)));
 
         return Response.json({
           success: true,
-          key,
+          filename: `${filename}.doc`,
+          contentType: "application/msword",
+          content: base64,
           message: "Word belgesi oluşturuldu",
         });
       }
@@ -187,14 +169,13 @@ export default {
         };
 
         const content = generateHTMLReport(title, sections);
-        const key = `files/${filename}.html`;
-        await env.BUCKET.put(key, content, {
-          httpMetadata: { contentType: "text/html" },
-        });
+        const base64 = btoa(unescape(encodeURIComponent(content)));
 
         return Response.json({
           success: true,
-          key,
+          filename: `${filename}.html`,
+          contentType: "text/html",
+          content: base64,
           message: "HTML rapor oluşturuldu",
         });
       }
@@ -228,20 +209,20 @@ export default {
           return Response.json({ error: "AI cevabı parse edilemedi", raw: aiResult.response }, { status: 500 });
         }
 
-        let key: string;
         let content: string;
         let contentType: string;
+        let ext: string;
 
         if (fileType === "csv" || fileType === "excel") {
           const sheets = (parsed.sheets as { name: string; data: string[][] }[]) ?? [{ name: "Sayfa1", data: [["İçerik"]] }];
           if (fileType === "csv") {
             content = generateCSV(sheets[0].data);
             contentType = "text/csv";
-            key = `files/${filename}.csv`;
+            ext = "csv";
           } else {
             content = generateExcelXML(sheets);
             contentType = "application/vnd.ms-excel";
-            key = `files/${filename}.xls`;
+            ext = "xls";
           }
         } else if (fileType === "word") {
           content = generateWordHTML(
@@ -249,84 +230,26 @@ export default {
             (parsed.paragraphs as string[]) ?? ["İçerik bulunamadı"],
           );
           contentType = "application/msword";
-          key = `files/${filename}.doc`;
+          ext = "doc";
         } else {
           content = generateHTMLReport(
             (parsed.title as string) ?? topic,
             (parsed.sections as { heading: string; content: string }[]) ?? [],
           );
           contentType = "text/html";
-          key = `files/${filename}.html`;
+          ext = "html";
         }
 
-        await env.BUCKET.put(key, content, { httpMetadata: { contentType } });
+        const base64 = btoa(unescape(encodeURIComponent(content)));
 
         return Response.json({
           success: true,
-          key,
+          filename: `${filename}.${ext}`,
+          contentType,
+          content: base64,
           fileType,
           message: `AI tarafından ${fileType} dosyası oluşturuldu`,
         });
-      }
-
-      // --- Belgeyi Markdown'a Çevir (Workers AI toMarkdown) ---
-      if (path === "/to-markdown" && request.method === "POST") {
-        const formData = await request.formData();
-        const file = formData.get("file") as File;
-
-        const result = await env.AI.toMarkdown({
-          name: file.name,
-          blob: new Blob([await file.arrayBuffer()]),
-        });
-
-        const markdownContent = result.map((r) => r.text).join("\n\n");
-        const key = `files/${file.name}.md`;
-        await env.BUCKET.put(key, markdownContent, {
-          httpMetadata: { contentType: "text/markdown" },
-        });
-
-        return Response.json({
-          success: true,
-          key,
-          markdown: markdownContent,
-          message: "Belge Markdown'a çevrildi",
-        });
-      }
-
-      // --- Dosya Listele ---
-      if (path === "/list" && request.method === "GET") {
-        const listed = await env.BUCKET.list({ prefix: "files/" });
-        return Response.json({
-          files: listed.objects.map((o) => ({
-            key: o.key,
-            size: o.size,
-            uploaded: o.uploaded,
-          })),
-        });
-      }
-
-      // --- Dosya İndir ---
-      if (path.startsWith("/download/") && request.method === "GET") {
-        const key = path.replace("/download/", "");
-        const object = await env.BUCKET.get(key);
-
-        if (!object) {
-          return Response.json({ error: "Dosya bulunamadı" }, { status: 404 });
-        }
-
-        return new Response(object.body, {
-          headers: {
-            "Content-Type": object.httpMetadata?.contentType ?? "application/octet-stream",
-            "Content-Disposition": `attachment; filename="${key.split("/").pop()}"`,
-          },
-        });
-      }
-
-      // --- Dosya Sil ---
-      if (path.startsWith("/delete/") && request.method === "DELETE") {
-        const key = path.replace("/delete/", "");
-        await env.BUCKET.delete(key);
-        return Response.json({ success: true, message: "Dosya silindi", key });
       }
 
       // --- Sağlık ---
