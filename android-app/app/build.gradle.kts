@@ -17,7 +17,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Worker URL — deploy ettikten sonra burayı güncelleyin
-        buildConfigField("String", "API_BASE_URL", "\"https://orchestrator.YOUR_SUBDOMAIN.workers.dev\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://orchestrator.tayved.workers.dev\"")
     }
 
     buildTypes {
