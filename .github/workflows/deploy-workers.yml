@@ -13,18 +13,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install Wrangler
         run: npm install -g wrangler
-
-      - name: Create R2 Buckets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          wrangler r2 bucket create media-storage || true
-          wrangler r2 bucket create file-storage || true
 
       - name: Deploy media-worker
         env:
@@ -61,27 +53,3 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: cd orchestrator && npm install && npx wrangler deploy
-
-      - name: Set Secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
-          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          if [ -n "$GOOGLE_AI_API_KEY" ]; then
-            echo "$GOOGLE_AI_API_KEY" | wrangler secret put GOOGLE_AI_API_KEY --name media-worker
-          fi
-          if [ -n "$OPENAI_API_KEY" ]; then
-            echo "$OPENAI_API_KEY" | wrangler secret put OPENAI_API_KEY --name media-worker
-            echo "$OPENAI_API_KEY" | wrangler secret put OPENAI_API_KEY --name qa-worker
-          fi
-          if [ -n "$ANTHROPIC_API_KEY" ]; then
-            echo "$ANTHROPIC_API_KEY" | wrangler secret put ANTHROPIC_API_KEY --name media-worker
-            echo "$ANTHROPIC_API_KEY" | wrangler secret put ANTHROPIC_API_KEY --name qa-worker
-          fi
-          if [ -n "$EXA_API_KEY" ]; then
-            echo "$EXA_API_KEY" | wrangler secret put EXA_API_KEY --name search-worker
-          fi
