@@ -1,0 +1,7 @@
+# Secrets ve yerel değişkenler — asla commit etme
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+!.dev.vars.example
+!.env.example
