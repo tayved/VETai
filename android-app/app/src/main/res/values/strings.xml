@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AI Hub</string>
+
+    <string-array name="voices">
+        <item>asteria</item>
+        <item>luna</item>
+        <item>zeus</item>
+        <item>pulsar</item>
+        <item>orion</item>
+        <item>arcas</item>
+        <item>hera</item>
+        <item>perseus</item>
+        <item>stella</item>
+        <item>athena</item>
+    </string-array>
+
+    <string-array name="file_types">
+        <item>Excel</item>
+        <item>Word</item>
+        <item>CSV</item>
+        <item>HTML</item>
+    </string-array>
+</resources>
