@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "search-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "ai": { "binding": "AI" },
+  "browser": { "binding": "BROWSER" },
+  "secrets": { "optional": ["EXA_API_KEY", "CERAMIC_API_KEY", "LINKUP_API_KEY"] },
+  "observability": { "enabled": true }
+}
