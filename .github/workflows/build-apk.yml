@@ -18,10 +18,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: android-actions/setup-android@v3
-        with:
-          api-level: 35
-          build-tools-version: '35.0.0'
+      - name: Setup Android SDK
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - uses: actions/cache@v4
         with:
@@ -40,16 +40,3 @@ jobs:
           name: ai-hub-apk
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
-
-      - name: Build Release APK
-        working-directory: android-app
-        run: ./gradlew assembleRelease --no-daemon
-        continue-on-error: true
-
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: ai-hub-apk-release
-          path: android-app/app/build/outputs/apk/release/app-release-unsigned.apk
-          retention-days: 30
-          if-no-files-found: ignore
