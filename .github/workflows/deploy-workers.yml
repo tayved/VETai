@@ -22,34 +22,34 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: cd media-worker && npm install && npx wrangler deploy
+        run: cd media-worker && npm install --legacy-peer-deps && npx wrangler deploy
 
       - name: Deploy file-worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: cd file-worker && npm install && npx wrangler deploy
+        run: cd file-worker && npm install --legacy-peer-deps && npx wrangler deploy
 
       - name: Deploy search-worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: cd search-worker && npm install && npx wrangler deploy
+        run: cd search-worker && npm install --legacy-peer-deps && npx wrangler deploy
 
       - name: Deploy translate-worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: cd translate-worker && npm install && npx wrangler deploy
+        run: cd translate-worker && npm install --legacy-peer-deps && npx wrangler deploy
 
       - name: Deploy qa-worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: cd qa-worker && npm install && npx wrangler deploy
+        run: cd qa-worker && npm install --legacy-peer-deps && npx wrangler deploy
 
       - name: Deploy orchestrator
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: cd orchestrator && npm install && npx wrangler deploy
+        run: cd orchestrator && npm install --legacy-peer-deps && npx wrangler deploy
